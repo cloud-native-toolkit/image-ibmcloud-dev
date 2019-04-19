@@ -1,9 +1,9 @@
 {
   "name": "ibmcloud-dev",
-  "version": "1.0.11",
+  "version": "1.0.0",
   "description": "Docker image for IBM Cloud builds",
   "config": {
-    "docker_registry": "seansund"
+    "docker_registry": "garagecatalyst"
   },
   "main": "index.js",
   "scripts": {
