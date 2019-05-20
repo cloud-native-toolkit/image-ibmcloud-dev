@@ -3,13 +3,16 @@
   "version": "1.0.0",
   "description": "Docker image for IBM Cloud builds",
   "config": {
-    "docker_registry": "garagecatalyst"
+    "docker_registry": "garagecatalyst",
+    "image_tag": ""
   },
   "main": "index.js",
   "scripts": {
     "version": "npm run push",
     "postversion": "git push && git push --tags",
-    "push": "./scripts/publish.sh \"$npm_package_name\" \"$npm_package_version\" \"$npm_package_config_docker_registry\""
+    "build": "./scripts/publish.sh \"$npm_package_name\" \"$npm_package_version\" \"$npm_package_config_image_tag\"",
+    "prepush": "npm run build",
+    "push": "./scripts/publish.sh \"$npm_package_config_docker_registry\" \"$npm_package_name\" \"$npm_package_version\" \"$npm_package_config_image_tag\""
   },
   "author": "Sean Sundberg",
   "license": "ISC"
