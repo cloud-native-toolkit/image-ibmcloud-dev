@@ -1,13 +1,23 @@
 FROM debian:stretch-slim
 
 # Install some core libraries (build-essentials, sudo, python, curl)
-RUN apt-get update && \
-    apt-get install -y apt-transport-https && \
-    apt-get install -y gnupg gnupg2 gnupg1 && \
-    apt-get install -y build-essential && \
-    apt-get install -y sudo && \
-    apt-get install -y python && \
-    apt-get install -y curl
+RUN apt-get update -qq && \
+    apt-get install -qq -y apt-transport-https && \
+    apt-get install -qq -y gnupg gnupg2 gnupg1 && \
+    apt-get install -qq -y build-essential && \
+    apt-get install -qq -y sudo && \
+    apt-get install -qq -y python && \
+    apt-get install -qq -y curl
+
+#RUN curl -O -L https://github.com/kubernetes-sigs/kustomize/releases/download/v3.0.3/kustomize_3.0.3_linux_amd64 &&\
+#    mv kustomize_3.0.3_linux_amd64 /usr/local/bin/kustomize &&\
+#    chmod u+x /usr/local/bin/kustomize
+
+RUN curl -O -L https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit.tar.gz &&\
+    tar -zvxf openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit.tar.gz &&\
+    cp openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit/oc /usr/local/bin &&\
+    chmod +x /usr/local/bin/oc &&\
+    rm -rf openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit
 
 # Configure sudoers so that sudo can be used without a password
 RUN chmod u+w /etc/sudoers && echo "%sudo   ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
@@ -17,7 +27,10 @@ RUN groupadd -g 10000 devops && \
     useradd -u 10000 -g 10000 -G sudo -d /home/devops -m devops && \
     usermod --password $(echo password | openssl passwd -1 -stdin) devops
 
-USER devops
+COPY src/.bashrc-ni /home/devops
+RUN chown -R 10000:0 /home/devops
+
+USER 10000
 WORKDIR /home/devops
 
 # Install the ibmcloud cli
@@ -30,7 +43,7 @@ RUN sudo usermod -aG docker devops
 # Install nvm
 RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
 
-RUN echo 'echo "Initializing environment..."' > /home/devops/.bashrc-ni && \
+RUN echo 'echo "Initializing environment..."' >> /home/devops/.bashrc-ni && \
     echo 'export NVM_DIR="${HOME}/.nvm"' >> /home/devops/.bashrc-ni && \
     echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> /home/devops/.bashrc-ni
 

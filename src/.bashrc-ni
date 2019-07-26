@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [[ -n "${APIKEY}" ]] || [[ -n "${RESOURCE_GROUP}" ]] && [[ -n "${REGION}" ]] && [[ -n "${CLUSTER_NAME}" ]]; then
+    if [[ -z "${APIURL}" ]]; then
+        APIURL="cloud.ibm.com"
+    fi
+
+    if [[ -z "${TMP_DIR}" ]]; then
+        TMP_DIR=./.tmp
+    fi
+
+    mkdir -p ${TMP_DIR}
+
+    ibmcloud login -a ${APIURL} --apikey ${APIKEY} -g ${RESOURCE_GROUP} -r ${REGION}
+
+    # Turn off check-version so it doesn't spit out extra info during cluster-config
+    ibmcloud config --check-version=false
+    ibmcloud cs cluster-config --cluster ${CLUSTER_NAME} --export > ${TMP_DIR}/.kubeconfig
+
+    . ${TMP_DIR}/.kubeconfig
+fi
+

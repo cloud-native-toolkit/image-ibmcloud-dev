@@ -1,25 +1,32 @@
 #!/usr/bin/env bash
 
-SCRIPT_DIR=$(dirname $0)
-
-REGISTRY_NAME="$1"
+IMAGE_ORG="$1"
 IMAGE_NAME="$2"
 IMAGE_VER="$3"
-IMAGE_TAG="$4"
+if [[ -n "$4" ]]; then
+    IMAGE_BRANCH="-$4"
+fi
+NOT_LATEST="$5"
 
-if [[ -z "${REGISTRY_NAME}" ]] || [[ -z "${IMAGE_NAME}" ]] || [[ -z "${IMAGE_VER}" ]]; then
-  echo "Usage: $0 {REGISTRY_NAME} {IMAGE_NAME} {IMAGE_VER} [{IMAGE_TAG}]"
-  exit 1
+if [[ -z "${IMAGE_ORG}" ]] || [[ -z "${IMAGE_NAME}" ]] || [[ -z "${IMAGE_VER}" ]]; then
+   echo "Required input is missing"
+   echo "Usage: publish.sh IMAGE_ORG IMAGE_NAME IMAGE_VER [IMAGE_BRANCH] [NOT_LATEST]"
+   exit 1
 fi
 
-if [[ -n "${IMAGE_TAG}" ]]; then
-  IMAGE_VER="${IMAGE_VER}-${IMAGE_TAG}"
+echo "Tagging and pushing ${IMAGE_ORG}/${IMAGE_NAME}:${IMAGE_VER}${IMAGE_BRANCH}"
+
+docker tag "${IMAGE_NAME}:${IMAGE_VER}${IMAGE_BRANCH}" "${IMAGE_ORG}/${IMAGE_NAME}:${IMAGE_VER}${IMAGE_BRANCH}"
+docker push "${IMAGE_ORG}/${IMAGE_NAME}:${IMAGE_VER}${IMAGE_BRANCH}"
+
+if [[ -z "$4" ]]; then
+    LATEST="latest"
+else
+    LATEST="$4"
 fi
 
-docker tag "${IMAGE_NAME}:${IMAGE_VER}" "${REGISTRY_NAME}/${IMAGE_NAME}:${IMAGE_VER}"
-docker push "${REGISTRY_NAME}/${IMAGE_NAME}:${IMAGE_VER}"
-
-if [[ -z "${IMAGE_TAG}" ]]; then
-  docker tag "${IMAGE_NAME}:${IMAGE_VER}" "${REGISTRY_NAME}/${IMAGE_NAME}:latest"
-  docker push "${REGISTRY_NAME}/${IMAGE_NAME}:latest"
+if [[ -z "${NOT_LATEST}" ]]; then
+    echo "Tagging and pushing ${IMAGE_ORG}/${IMAGE_NAME}:${IMAGE_VER}${IMAGE_BRANCH} as ${IMAGE_ORG}/${IMAGE_NAME}:${LATEST}"
+    docker tag "${IMAGE_NAME}:${IMAGE_VER}${IMAGE_BRANCH}" "${IMAGE_ORG}/${IMAGE_NAME}:${LATEST}"
+    docker push "${IMAGE_ORG}/${IMAGE_NAME}:${LATEST}"
 fi
