@@ -1,4 +1,4 @@
-FROM debian:stretch-slim
+FROM ubuntu:18.04
 
 # Install some core libraries (build-essentials, sudo, python, curl)
 RUN apt-get update -qq && \
@@ -7,11 +7,11 @@ RUN apt-get update -qq && \
     apt-get install -qq -y build-essential && \
     apt-get install -qq -y sudo && \
     apt-get install -qq -y python && \
-    apt-get install -qq -y curl
-
-#RUN curl -O -L https://github.com/kubernetes-sigs/kustomize/releases/download/v3.0.3/kustomize_3.0.3_linux_amd64 &&\
-#    mv kustomize_3.0.3_linux_amd64 /usr/local/bin/kustomize &&\
-#    chmod u+x /usr/local/bin/kustomize
+    apt-get install -qq -y curl && \
+    apt-get install -qq -y software-properties-common uidmap
+RUN add-apt-repository -y ppa:projectatomic/ppa && \
+    apt-get update -qq && \
+    apt-get -qq -y install podman buildah
 
 RUN curl -O -L https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit.tar.gz &&\
     tar -zvxf openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit.tar.gz &&\
@@ -65,5 +65,14 @@ RUN sudo chown -R 10000:0 /home/devops && \
     sudo chmod -R g=u /home/devops
 
 RUN sudo apt-get autoremove && sudo apt-get clean
+
+RUN opsys=linux; \
+    curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest |\
+    grep browser_download |\
+    grep $opsys |\
+    cut -d '"' -f 4 |\
+    xargs curl -O -L &&\
+    sudo mv kustomize_*_${opsys}_amd64 /usr/local/bin/kustomize &&\
+    sudo chmod +x /usr/local/bin/kustomize
 
 ENTRYPOINT [ "uid_entrypoint" ]
