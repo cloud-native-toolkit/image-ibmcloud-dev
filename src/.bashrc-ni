@@ -11,6 +11,8 @@ if [[ -n "${APIKEY}" ]] || [[ -n "${RESOURCE_GROUP}" ]] && [[ -n "${REGION}" ]] 
 
     mkdir -p ${TMP_DIR}
 
+    echo "Logging into IBMCloud"
+
     ibmcloud login -a ${APIURL} --apikey ${APIKEY} -g ${RESOURCE_GROUP} -r ${REGION}
 
     # Turn off check-version so it doesn't spit out extra info during cluster-config
