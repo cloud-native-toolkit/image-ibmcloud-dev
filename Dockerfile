@@ -24,11 +24,14 @@ RUN chmod u+w /etc/sudoers && echo "%sudo   ALL=(ALL) NOPASSWD:ALL" >> /etc/sudo
 
 # Create devops user
 RUN groupadd -g 10000 devops && \
-    useradd -u 10000 -g 10000 -G sudo -d /home/devops -m devops && \
+    useradd -u 10000 -g 10000 -G sudo,root -d /home/devops -m devops && \
     usermod --password $(echo password | openssl passwd -1 -stdin) devops
 
 COPY src/.bashrc-ni /home/devops
-RUN chown -R 10000:0 /home/devops
+COPY src/uid_entrypoint /usr/local/bin
+RUN chown -R 10000:0 /home/devops && \
+    chmod +x /usr/local/bin/uid_entrypoint && \
+    chmod g=u /etc/passwd
 
 USER 10000
 WORKDIR /home/devops
@@ -52,6 +55,15 @@ RUN echo 'echo "Initializing environment..."' >> /home/devops/.bashrc-ni && \
 ENV BASH_ENV /home/devops/.bashrc-ni
 
 # Pre-install node v11.12.0
-RUN . /home/devops/.bashrc-ni && nvm install v11.12.0 && nvm use v11.12.0
+RUN . /home/devops/.bashrc-ni && \
+    nvm install v11.12.0 && \
+    nvm use v11.12.0
 
 RUN sudo apt-get install -y jq
+
+RUN sudo chown -R 10000:0 /home/devops && \
+    sudo chmod -R g=u /home/devops
+
+RUN sudo apt-get autoremove && sudo apt-get clean
+
+ENTRYPOINT [ "uid_entrypoint" ]

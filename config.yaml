@@ -2,7 +2,7 @@ schemaVersion: "2.0.0"
 
 metadataTest:
   workdir: "/home/devops"
-#  entrypoint: ["/bin/bash", "--init-file", "/home/devops/.bashrc-ni"]
+  entrypoint: ["uid_entrypoint"]
 
 commandTests:
   - name: "current user"
@@ -65,15 +65,24 @@ commandTests:
 #    args: ["--help"]
 #    expectedOutput: ["\\d[.]\\d[.]\\d\n"]
 
-#fileExistenceTests:
-#  - name: 'jenkins-config-template.xml'
-#    path: '/home/devops/etc'
-#    shouldExist: true
-#
-#  - name: "terraform-provider-helm.*"
-#    path: "/home/devops/.terraform.d/plugins"
-#    shouldExist: true
-#
+fileExistenceTests:
+  - name: '.bluemix'
+    path: '/home/devops/.bluemix'
+    shouldExist: true
+    permissions: 'drwxrwx---'
+    uid: 10000
+    gid: 0
+
+  - name: "uid_entrypoint"
+    path: "/usr/local/bin/uid_entrypoint"
+    shouldExist: true
+    isExecutableBy: 'any'
+
+  - name: "passwd"
+    path: "/etc/passwd"
+    shouldExist: true
+    permissions: '-rw-rw-r--'
+
 #  - name: "terraform-provider-kubernetes.*"
 #    path: "/home/devops/.terraform.d/plugins"
 #    shouldExist: true
