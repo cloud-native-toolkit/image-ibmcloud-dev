@@ -1,6 +1,10 @@
 #!/bin/bash
 
-if [[ -n "${APIKEY}" ]] || [[ -n "${RESOURCE_GROUP}" ]] && [[ -n "${REGION}" ]] && [[ -n "${CLUSTER_NAME}" ]]; then
+if [[ "${CLUSTER_TYPE}" == "openshift" ]] && [[ -n "${APIKEY}" ]] && [[ -n "${SERVER_URL}" ]]; then
+    echo "Logging into IBM Cloud - openshift"
+    oc login -u apikey -p ${APIKEY} --server=${SERVER_URL} > /dev/null
+
+elif [[ -n "${APIKEY}" ]] && [[ -n "${RESOURCE_GROUP}" ]] && [[ -n "${REGION}" ]] && [[ -n "${CLUSTER_NAME}" ]]; then
     if [[ -z "${APIURL}" ]]; then
         APIURL="cloud.ibm.com"
     fi
@@ -11,7 +15,7 @@ if [[ -n "${APIKEY}" ]] || [[ -n "${RESOURCE_GROUP}" ]] && [[ -n "${REGION}" ]] 
 
     mkdir -p ${TMP_DIR}
 
-    echo "Logging into IBMCloud"
+    echo "Logging into IBM Cloud - ${REGION}/${RESOURCE_GROUP}/${CLUSTER_NAME}"
 
     ibmcloud login -a ${APIURL} --apikey ${APIKEY} -g ${RESOURCE_GROUP} -r ${REGION} > /dev/null
 
@@ -21,4 +25,3 @@ if [[ -n "${APIKEY}" ]] || [[ -n "${RESOURCE_GROUP}" ]] && [[ -n "${REGION}" ]] 
 
     . ${TMP_DIR}/.kubeconfig
 fi
-
