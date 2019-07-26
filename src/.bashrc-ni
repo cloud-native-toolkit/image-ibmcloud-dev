@@ -1,10 +1,6 @@
 #!/bin/bash
 
-if [[ "${CLUSTER_TYPE}" == "openshift" ]] && [[ -n "${APIKEY}" ]] && [[ -n "${SERVER_URL}" ]]; then
-    echo "Logging into IBM Cloud - openshift"
-    oc login -u apikey -p ${APIKEY} --server=${SERVER_URL} > /dev/null
-
-elif [[ -n "${APIKEY}" ]] && [[ -n "${RESOURCE_GROUP}" ]] && [[ -n "${REGION}" ]] && [[ -n "${CLUSTER_NAME}" ]]; then
+if [[ -n "${APIKEY}" ]] && [[ -n "${RESOURCE_GROUP}" ]] && [[ -n "${REGION}" ]]; then
     if [[ -z "${APIURL}" ]]; then
         APIURL="cloud.ibm.com"
     fi
@@ -19,9 +15,17 @@ elif [[ -n "${APIKEY}" ]] && [[ -n "${RESOURCE_GROUP}" ]] && [[ -n "${REGION}" ]
 
     ibmcloud login -a ${APIURL} --apikey ${APIKEY} -g ${RESOURCE_GROUP} -r ${REGION} > /dev/null
 
-    # Turn off check-version so it doesn't spit out extra info during cluster-config
-    ibmcloud config --check-version=false
-    ibmcloud cs cluster-config --cluster ${CLUSTER_NAME} --export > ${TMP_DIR}/.kubeconfig
+    if [[ -n "${CLUSTER_TYPE}" ]] && [[ "${CLUSTER_TYPE}" != "openshift" ]] && [[ -n "${CLUSTER_NAME}" ]]; then
+        # Turn off check-version so it doesn't spit out extra info during cluster-config
+        ibmcloud config --check-version=false
+        ibmcloud cs cluster-config --cluster ${CLUSTER_NAME} --export > ${TMP_DIR}/.kubeconfig
 
-    . ${TMP_DIR}/.kubeconfig
+        . ${TMP_DIR}/.kubeconfig
+    fi
+fi
+
+
+if [[ "${CLUSTER_TYPE}" == "openshift" ]] && [[ -n "${APIKEY}" ]] && [[ -n "${SERVER_URL}" ]]; then
+    echo "Logging into IBM Cloud - openshift"
+    oc login -u apikey -p ${APIKEY} --server=${SERVER_URL} > /dev/null
 fi
