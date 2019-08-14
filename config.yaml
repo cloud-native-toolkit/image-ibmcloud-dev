@@ -80,7 +80,7 @@ fileExistenceTests:
     path: '/home/devops/.bluemix'
     shouldExist: true
     permissions: 'drwxrwx---'
-    uid: 10000
+    uid: 1000
     gid: 0
 
   - name: "uid_entrypoint"
@@ -92,6 +92,10 @@ fileExistenceTests:
     path: "/etc/passwd"
     shouldExist: true
     permissions: '-rw-rw-r--'
+
+  - name: "devops"
+    path: "/home/devops"
+    uid: 1000
 
 #  - name: "terraform-provider-kubernetes.*"
 #    path: "/home/devops/.terraform.d/plugins"

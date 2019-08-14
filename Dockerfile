@@ -23,17 +23,17 @@ RUN curl -O -L https://github.com/openshift/origin/releases/download/v3.11.0/ope
 RUN chmod u+w /etc/sudoers && echo "%sudo   ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 # Create devops user
-RUN groupadd -g 10000 devops && \
-    useradd -u 10000 -g 10000 -G sudo,root -d /home/devops -m devops && \
+RUN groupadd -g 1000 devops && \
+    useradd -u 1000 -g 1000 -G sudo,root -d /home/devops -m devops && \
     usermod --password $(echo password | openssl passwd -1 -stdin) devops
 
 COPY src/.bashrc-ni /home/devops
 COPY src/uid_entrypoint /usr/local/bin
-RUN chown -R 10000:0 /home/devops && \
+RUN chown -R 1000:0 /home/devops && \
     chmod +x /usr/local/bin/uid_entrypoint && \
     chmod g=u /etc/passwd
 
-USER 10000
+USER 1000
 WORKDIR /home/devops
 
 # Install the ibmcloud cli
@@ -61,7 +61,7 @@ RUN . /home/devops/.bashrc-ni && \
 
 RUN sudo apt-get install -y jq
 
-RUN sudo chown -R 10000:0 /home/devops && \
+RUN sudo chown -R 1000:0 /home/devops && \
     sudo chmod -R g=u /home/devops
 
 RUN sudo apt-get autoremove && sudo apt-get clean
