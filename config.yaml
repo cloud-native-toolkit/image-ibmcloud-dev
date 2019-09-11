@@ -34,10 +34,10 @@ commandTests:
     args: ["--help"]
     expectedOutput: ["The Kubernetes package manager.*"]
 
-  - name: "Kustomize CLI installation"
-    command: "kustomize"
-    args: ["--help"]
-    expectedOutput: [".*Usage:\n  kustomize.*"]
+#  - name: "Kustomize CLI installation"
+#    command: "kustomize"
+#    args: ["--help"]
+#    expectedOutput: [".*Usage:\n  kustomize.*"]
 
   - name: "Git installation"
     command: "git"
@@ -58,6 +58,16 @@ commandTests:
     command: "buildah"
     args: ["--help"]
     expectedOutput: [".*buildah.*"]
+
+  - name: "jq installation"
+    command: "jq"
+    args: ["--help"]
+    expectedOutput: [".*jq.*"]
+
+  - name: "yq installation"
+    command: "yq"
+    args: ["--help"]
+    expectedOutput: [".*yq.*"]
 
 #  - name: "nvm installation"
 #    setup: [["/bin/bash", "--init-file", "/home/devops/.bashrc-ni"]]

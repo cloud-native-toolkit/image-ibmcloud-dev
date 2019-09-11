@@ -64,15 +64,19 @@ RUN sudo apt-get install -y jq
 RUN sudo chown -R 1000:0 /home/devops && \
     sudo chmod -R g=u /home/devops
 
-RUN sudo apt-get autoremove && sudo apt-get clean
+RUN sudo add-apt-repository ppa:rmescandon/yq && \
+    sudo apt-get update && \
+    sudo apt-get install yq -y
 
-RUN opsys=linux; \
-    curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest |\
-    grep browser_download |\
-    grep $opsys |\
-    cut -d '"' -f 4 |\
-    xargs curl -O -L &&\
-    sudo mv kustomize_*_${opsys}_amd64 /usr/local/bin/kustomize &&\
-    sudo chmod +x /usr/local/bin/kustomize
+RUN sudo apt-get autoremove && sudo apt-get clean
+#
+#RUN opsys=linux; \
+#    curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest |\
+#    grep browser_download |\
+#    grep $opsys |\
+#    cut -d '"' -f 4 |\
+#    xargs curl -O -L &&\
+#    sudo mv kustomize_*_${opsys}_amd64 /usr/local/bin/kustomize &&\
+#    sudo chmod +x /usr/local/bin/kustomize
 
 ENTRYPOINT [ "uid_entrypoint" ]
