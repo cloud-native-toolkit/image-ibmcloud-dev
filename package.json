@@ -1,6 +1,6 @@
 {
   "name": "ibmcloud-dev",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "org": "garagecatalyst",
   "branch": "",
   "description": "Docker image for IBM Cloud builds",

@@ -69,14 +69,19 @@ RUN sudo add-apt-repository ppa:rmescandon/yq && \
     sudo apt-get install yq -y
 
 RUN sudo apt-get autoremove && sudo apt-get clean
-#
-#RUN opsys=linux; \
-#    curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest |\
-#    grep browser_download |\
-#    grep $opsys |\
-#    cut -d '"' -f 4 |\
-#    xargs curl -O -L &&\
-#    sudo mv kustomize_*_${opsys}_amd64 /usr/local/bin/kustomize &&\
-#    sudo chmod +x /usr/local/bin/kustomize
+
+RUN opsys=linux && \
+    curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases |\
+      grep browser_download |\
+      grep $opsys |\
+      cut -d '"' -f 4 |\
+      grep /kustomize/v |\
+      sort | tail -n 1 |\
+      xargs curl -O -L && \
+    tar xzvf ./kustomize_v*_${opsys}_amd64.tar.gz && \
+    sudo mv ./kustomize /usr/local/bin/kustomize && \
+    sudo chmod +x /usr/local/bin/kustomize
+
+ENV HOME /home/devops
 
 ENTRYPOINT [ "uid_entrypoint" ]

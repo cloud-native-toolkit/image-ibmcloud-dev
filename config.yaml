@@ -34,10 +34,10 @@ commandTests:
     args: ["--help"]
     expectedOutput: ["The Kubernetes package manager.*"]
 
-#  - name: "Kustomize CLI installation"
-#    command: "kustomize"
-#    args: ["--help"]
-#    expectedOutput: [".*Usage:\n  kustomize.*"]
+  - name: "Kustomize CLI installation"
+    command: "kustomize"
+    args: ["--help"]
+    expectedOutput: [".*Usage:\n  kustomize.*"]
 
   - name: "Git installation"
     command: "git"
