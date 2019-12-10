@@ -68,6 +68,8 @@ RUN sudo add-apt-repository ppa:rmescandon/yq && \
     sudo apt-get update && \
     sudo apt-get install yq -y
 
+RUN sudo apt-get install -y skopeo
+
 RUN sudo apt-get autoremove && sudo apt-get clean
 
 RUN opsys=linux && \

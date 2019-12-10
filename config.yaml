@@ -34,6 +34,11 @@ commandTests:
     args: ["--help"]
     expectedOutput: ["The Kubernetes package manager.*"]
 
+  - name: "Skopeo"
+    command: "skopeo"
+    args: ["--help"]
+    expectedOutput: ["skopeo.*"]
+
   - name: "Kustomize CLI installation"
     command: "kustomize"
     args: ["--help"]
