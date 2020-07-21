@@ -93,7 +93,7 @@ RUN opsys=linux && \
     sudo mv ./kustomize /usr/local/bin/kustomize && \
     sudo chmod +x /usr/local/bin/kustomize
 
-RUN sudo chmod +w /usr/local/share/ca-certificates
+RUN sudo chmod +w /usr/local/share/ca-certificates && sudo chmod +w /usr/local/share
 
 ENV HOME /home/devops
 
