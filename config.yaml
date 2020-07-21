@@ -49,6 +49,11 @@ commandTests:
     args: ["--help"]
     expectedOutput: [".*OpenShift.*"]
 
+  - name: "Blue Horizon"
+    command: "hzn"
+    args: ["--help"]
+    expectedOutput: [".*hzn.*"]
+
   - name: "Podman installation"
     command: "podman"
     args: ["--help"]

@@ -56,8 +56,8 @@ ENV BASH_ENV /home/devops/.bashrc-ni
 
 # Pre-install node v11.12.0
 RUN . /home/devops/.bashrc-ni && \
-    nvm install v11.12.0 && \
-    nvm use v11.12.0
+    nvm install v12 && \
+    nvm use v12
 
 RUN sudo apt-get install -y jq
 
@@ -67,6 +67,17 @@ RUN sudo chown -R 1000:0 /home/devops && \
 RUN sudo add-apt-repository ppa:rmescandon/yq && \
     sudo apt-get update && \
     sudo apt-get install yq -y
+
+RUN export arch=$(dpkg --print-architecture) && \
+    export dist=bionic && \
+    export version=2.26.12 && \
+    curl -O http://pkg.bluehorizon.network/linux/ubuntu/pool/main/h/horizon/bluehorizon_${version}~ppa~ubuntu.${dist}_all.deb && \
+    curl -O http://pkg.bluehorizon.network/linux/ubuntu/pool/main/h/horizon/horizon-cli_${version}~ppa~ubuntu.${dist}_${arch}.deb && \
+    curl -O http://pkg.bluehorizon.network/linux/ubuntu/pool/main/h/horizon/horizon_${version}~ppa~ubuntu.${dist}_${arch}.deb && \
+    sudo apt-get install -y systemd && \
+    sudo dpkg -i horizon-cli_${version}~ppa~ubuntu.${dist}_${arch}.deb && \
+    sudo dpkg -i horizon_${version}~ppa~ubuntu.${dist}_${arch}.deb && \
+    sudo dpkg -i bluehorizon_${version}~ppa~ubuntu.${dist}_all.deb
 
 RUN sudo apt-get autoremove && sudo apt-get clean
 
@@ -81,6 +92,8 @@ RUN opsys=linux && \
     tar xzvf ./kustomize_v*_${opsys}_amd64.tar.gz && \
     sudo mv ./kustomize /usr/local/bin/kustomize && \
     sudo chmod +x /usr/local/bin/kustomize
+
+RUN sudo chmod +w /usr/local/share/ca-certificates
 
 ENV HOME /home/devops
 
