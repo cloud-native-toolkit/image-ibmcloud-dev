@@ -93,7 +93,12 @@ RUN opsys=linux && \
     sudo mv ./kustomize /usr/local/bin/kustomize && \
     sudo chmod +x /usr/local/bin/kustomize
 
-RUN sudo chmod g+w /usr/local/share/ca-certificates && sudo chmod g+w /usr/local/share
+RUN sudo chmod g+w /usr/local/share/ca-certificates && \
+    sudo chmod g+w /usr/share/ca-certificates && \
+    sudo chmod g+w /usr/local/share && \
+    sudo chmod g+w /etc/ca-certificates.conf && \
+    sudo chmod -R g+w /etc/ca-certificates && \
+    sudo chmod -R g+w /etc/ssl/certs
 
 ENV HOME /home/devops
 
