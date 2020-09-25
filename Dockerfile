@@ -13,11 +13,14 @@ RUN add-apt-repository -y ppa:projectatomic/ppa && \
     apt-get update -qq && \
     apt-get -qq -y install podman buildah
 
-RUN curl -O -L https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit.tar.gz &&\
-    tar -zvxf openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit.tar.gz &&\
-    cp openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit/oc /usr/local/bin &&\
+RUN mkdir octmp &&\
+    cd octmp &&\
+    curl -O -L https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.5.11/openshift-client-linux.tar.gz &&\
+    tar -zvxf openshift-client-linux.tar.gz &&\
+    cp oc /usr/local/bin &&\
     chmod +x /usr/local/bin/oc &&\
-    rm -rf openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit
+    cd .. &&\
+    rm -rf octmp
 
 # Configure sudoers so that sudo can be used without a password
 RUN chmod u+w /etc/sudoers && echo "%sudo   ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
@@ -99,6 +102,14 @@ RUN sudo chmod g+w /usr/local/share/ca-certificates && \
     sudo chmod g+w /etc/ca-certificates.conf && \
     sudo chmod -R g+w /etc/ca-certificates && \
     sudo chmod -R g+w /etc/ssl/certs
+
+RUN mkdir helm-tmp && \
+    cd helm-tmp && \
+    curl -L https://get.helm.sh/helm-v3.3.4-linux-amd64.tar.gz -o helm3.tar.gz && \
+    tar xzf helm3.tar.gz && \
+    sudo cp ./linux-amd64/helm /usr/local/bin && \
+    cd .. && \
+    rm -rf helm-tmp
 
 ENV HOME /home/devops
 
