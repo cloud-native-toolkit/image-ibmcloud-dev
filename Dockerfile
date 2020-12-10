@@ -1,106 +1,95 @@
-FROM ubuntu:18.04
+FROM docker.io/node:alpine3.12
 
-# Install some core libraries (build-essentials, sudo, python, curl)
-RUN apt-get update -qq && \
-    apt-get install -qq -y apt-transport-https && \
-    apt-get install -qq -y gnupg gnupg2 gnupg1 && \
-    apt-get install -qq -y build-essential && \
-    apt-get install -qq -y sudo && \
-    apt-get install -qq -y python && \
-    apt-get install -qq -y curl && \
-    apt-get install -qq -y software-properties-common uidmap
-RUN add-apt-repository -y ppa:projectatomic/ppa && \
-    apt-get update -qq && \
-    apt-get -qq -y install podman buildah
+ENV TERRAFORM_IBMCLOUD_VERSION 1.9.0
+ENV KUBECTL_VERSION 1.19.2
+ENV OPENSHIFT_CLI_VERSION 4.5.11
 
-RUN mkdir octmp &&\
-    cd octmp &&\
-    curl -O -L https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.5.11/openshift-client-linux.tar.gz &&\
-    tar -zvxf openshift-client-linux.tar.gz &&\
-    cp oc /usr/local/bin &&\
-    chmod +x /usr/local/bin/oc &&\
-    cd .. &&\
-    rm -rf octmp
+RUN apk add --update-cache --update \
+  curl \
+  unzip \
+  sudo \
+  shadow \
+  bash \
+  openssl \
+  alpine-sdk \
+  python3 \
+  ca-certificates \
+  && rm -rf /var/cache/apk/*
+
+WORKDIR $GOPATH/bin
+
+##################################
+# User setup
+##################################
 
 # Configure sudoers so that sudo can be used without a password
-RUN chmod u+w /etc/sudoers && echo "%sudo   ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-
-# Create devops user
-RUN groupadd -g 1000 devops && \
-    useradd -u 1000 -g 1000 -G sudo,root -d /home/devops -m devops && \
-    usermod --password $(echo password | openssl passwd -1 -stdin) devops
-
-COPY src/.bashrc-ni /home/devops
-COPY src/uid_entrypoint /usr/local/bin
-RUN chown -R 1000:0 /home/devops && \
-    chmod +x /usr/local/bin/uid_entrypoint && \
-    chmod g=u /etc/passwd
-
-USER 1000
-WORKDIR /home/devops
-
-# Install the ibmcloud cli
-RUN curl -sL https://ibm.biz/idt-installer | bash && \
-    ibmcloud config --check-version=false
-
-# Add the devops user to the docker group
-RUN sudo usermod -aG docker devops
-
-# Install nvm
-RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
-
-RUN echo 'echo "Initializing environment..."' >> /home/devops/.bashrc-ni && \
-    echo 'export NVM_DIR="${HOME}/.nvm"' >> /home/devops/.bashrc-ni && \
-    echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> /home/devops/.bashrc-ni
-
-# Set the BASH_ENV to /home/devops/.bashrc-ni so that it is executed in a
-# non-interactive shell
-ENV BASH_ENV /home/devops/.bashrc-ni
-
-# Pre-install node v11.12.0
-RUN . /home/devops/.bashrc-ni && \
-    nvm install v12 && \
-    nvm use v12
-
-RUN sudo apt-get install -y jq
-
-RUN sudo chown -R 1000:0 /home/devops && \
-    sudo chmod -R g=u /home/devops
-
-RUN sudo add-apt-repository ppa:rmescandon/yq && \
-    sudo apt-get update && \
-    sudo apt-get install yq -y
-
-RUN export arch=$(dpkg --print-architecture) && \
-    export dist=bionic && \
-    export version=2.26.12 && \
-    curl -O http://pkg.bluehorizon.network/linux/ubuntu/pool/main/h/horizon/bluehorizon_${version}~ppa~ubuntu.${dist}_all.deb && \
-    curl -O http://pkg.bluehorizon.network/linux/ubuntu/pool/main/h/horizon/horizon-cli_${version}~ppa~ubuntu.${dist}_${arch}.deb && \
-    curl -O http://pkg.bluehorizon.network/linux/ubuntu/pool/main/h/horizon/horizon_${version}~ppa~ubuntu.${dist}_${arch}.deb && \
-    sudo apt-get install -y systemd && \
-    sudo dpkg -i horizon-cli_${version}~ppa~ubuntu.${dist}_${arch}.deb && \
-    sudo dpkg -i horizon_${version}~ppa~ubuntu.${dist}_${arch}.deb && \
-    sudo dpkg -i bluehorizon_${version}~ppa~ubuntu.${dist}_all.deb
-
-RUN sudo apt-get autoremove && sudo apt-get clean
-
-RUN curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
-
-RUN sudo chmod g+w /usr/local/share/ca-certificates && \
-    sudo chmod g+w /usr/share/ca-certificates && \
-    sudo chmod g+w /usr/local/share && \
-    sudo chmod g+w /etc/ca-certificates.conf && \
-    sudo chmod -R g+w /etc/ca-certificates && \
-    sudo chmod -R g+w /etc/ssl/certs
-
-RUN mkdir helm-tmp && \
-    cd helm-tmp && \
-    curl -L https://get.helm.sh/helm-v3.3.4-linux-amd64.tar.gz -o helm3.tar.gz && \
-    tar xzf helm3.tar.gz && \
-    sudo cp ./linux-amd64/helm /usr/local/bin && \
-    cd .. && \
-    rm -rf helm-tmp
+RUN groupadd --force sudo && \
+    chmod u+w /etc/sudoers && \
+    echo "%sudo   ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 ENV HOME /home/devops
 
-ENTRYPOINT [ "uid_entrypoint" ]
+# Create devops user
+RUN useradd -u 10000 -g root -G sudo -d ${HOME} -m devops && \
+    usermod --password $(echo password | openssl passwd -1 -stdin) devops
+
+USER devops
+WORKDIR ${HOME}
+
+##################################
+# IBM Cloud CLI
+##################################
+
+# Install the ibmcloud cli
+RUN curl -fsSL https://clis.cloud.ibm.com/install/linux | sh && \
+    ibmcloud plugin install container-service -f && \
+    ibmcloud plugin install container-registry -f && \
+    ibmcloud plugin install observe-service -f && \
+    ibmcloud plugin install vpc-infrastructure -f && \
+    ibmcloud config --check-version=false
+
+# Install IBM Cloud Terraform Provider
+RUN mkdir -p ${HOME}/.terraform.d/plugins && \
+    cd ${HOME}/.terraform.d/plugins && \
+    curl -O -L https://github.com/IBM-Cloud/terraform-provider-ibm/releases/download/v${TERRAFORM_IBMCLOUD_VERSION}/linux_amd64.zip &&\
+    unzip linux_amd64.zip && \
+    chmod +x terraform-provider-ibm_* &&\
+    rm -rf linux_amd64.zip && \
+    cd -
+
+WORKDIR ${HOME}
+
+RUN curl -L https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${OPENSHIFT_CLI_VERSION}/openshift-client-linux.tar.gz --output oc-client.tar.gz && \
+    mkdir tmp && \
+    cd tmp && \
+    tar xzf ../oc-client.tar.gz && \
+    sudo mkdir -p /usr/local/fix && \
+    sudo chmod a+rwx /usr/local/fix && \
+    sudo cp ./oc /usr/local/fix && \
+    sudo chmod +x /usr/local/fix/oc && \
+    cd .. && \
+    rm -rf tmp && \
+    rm oc-client.tar.gz && \
+    echo '/lib/ld-musl-x86_64.so.1 --library-path /lib /usr/local/fix/oc $@' > ./oc && \
+    sudo mv ./oc /usr/local/bin && \
+    sudo chmod +x /usr/local/bin/oc
+
+RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl && \
+    chmod +x ./kubectl && \
+    sudo mv ./kubectl /usr/local/bin
+
+RUN curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash && \
+    chmod +x ./kustomize && \
+    sudo mv ./kustomize /usr/local/bin
+
+RUN curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+RUN curl -LO https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && \
+    chmod a+x jq-linux64 && \
+    sudo mv jq-linux64 /usr/local/bin/jq
+
+RUN wget -q -O ./yq $(wget -q -O - https://api.github.com/repos/mikefarah/yq/releases/latest | jq -r '.assets[] | select(.name == "yq_linux_amd64") | .browser_download_url') && \
+    chmod +x ./yq && \
+    sudo mv ./yq /usr/bin/yq
+
+ENTRYPOINT ["/bin/sh"]
