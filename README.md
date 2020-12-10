@@ -6,8 +6,7 @@ is used as the container in which CI pipelines run in order to complete common I
 ## Tools:
 
 - build-essentials
-- podman
-- buildah
+- kubectl cli
 - oc cli
 - ibmcloud cli
 - nvm
@@ -16,4 +15,3 @@ is used as the container in which CI pipelines run in order to complete common I
 - kustomize
 - helm
 - python
-- 
