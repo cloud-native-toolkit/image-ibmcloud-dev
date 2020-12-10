@@ -13,6 +13,7 @@ RUN apk add --update-cache --update \
   openssl \
   alpine-sdk \
   python3 \
+  skopeo \
   ca-certificates \
   && rm -rf /var/cache/apk/*
 
