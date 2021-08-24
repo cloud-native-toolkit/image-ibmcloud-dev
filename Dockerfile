@@ -17,13 +17,6 @@ RUN apk add --update-cache --update \
   skopeo \
   ca-certificates \
   && rm -rf /var/cache/apk/* \
-  && apk add  /hzn-cli-packages/horizon-cli-2.28.0-338.x86_64.rpm
-#  && ./horizon-cli*.rpm ./horizon-cli*.rpm
-ENV  HZN_ORG_ID dow
-ENV HZN_EXCHANGE_USER_AUTH iamapikey:OoTK8lmkYNFix7NY8LhtnLKl0KK2g0JF_tlC_ztWB8mh
-ENV HZN_EXCHANGE_URL https://cp-console.dow-mvp-0063h00000ekgoj-afb9c6047b062b44e3f1b3ecfeba4309-0000.us-south.containers.appdomain.cloud/edge-exchange/v1
-ENV HZN_FSS_CSSURL https://cp-console.dow-mvp-0063h00000ekgoj-afb9c6047b062b44e3f1b3ecfeba4309-0000.us-south.containers.appdomain.cloud/edge-css/
-ENV AGENT_NAMESPACE openhorizon-agent
 
 
 WORKDIR $GOPATH/bin
