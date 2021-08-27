@@ -1,23 +1,30 @@
-FROM docker.io/node:alpine3.12
+FROM centos:8
 
-ENV TERRAFORM_IBMCLOUD_VERSION 1.9.0
+
+
+#############################
+# installing the Horizon CLI
+############################
+
+COPY horizon-cli*.rpm /data/horizon-cli*.rpm
+RUN rpm -i /data/horizon-cli*.rpm
+
+
 ENV KUBECTL_VERSION 1.19.2
 ENV OPENSHIFT_CLI_VERSION 4.5.11
 ENV HOST_TYPE linux-rpm-x86_64 
 
-RUN apk add --update-cache --update \
+RUN yum install -y \
   curl \
   unzip \
   sudo \
-  shadow \
   bash \
   openssl \
-  alpine-sdk \
   python3 \
   skopeo \
+  wget \
   ca-certificates \
-  && rm -rf /var/cache/apk/* \
-
+  && rm -rf /var/cache/rpm/*
 
 WORKDIR $GOPATH/bin
 
@@ -50,16 +57,8 @@ RUN curl -fsSL https://clis.cloud.ibm.com/install/linux | sh && \
     ibmcloud plugin install container-registry -f && \
     ibmcloud plugin install observe-service -f && \
     ibmcloud plugin install vpc-infrastructure -f && \
-    ibmcloud config --check-version=false
+    ibmcloud config --check-version=false 
 
-# Install IBM Cloud Terraform Provider
-RUN mkdir -p ${HOME}/.terraform.d/plugins && \
-    cd ${HOME}/.terraform.d/plugins && \
-    curl -O -L https://github.com/IBM-Cloud/terraform-provider-ibm/releases/download/v${TERRAFORM_IBMCLOUD_VERSION}/linux_amd64.zip &&\
-    unzip linux_amd64.zip && \
-    chmod +x terraform-provider-ibm_* &&\
-    rm -rf linux_amd64.zip && \
-    cd -
 
 WORKDIR ${HOME}
 
