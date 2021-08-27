@@ -6,9 +6,9 @@ FROM centos:8
 # installing the Horizon CLI
 ############################
 
-COPY horizon-cli-2.28.0-338.x86_64.rpm /data/horizon-cli-2.28.0-338.x86_64.rpm
-RUN rpm -i /data/horizon-cli-2.28.0-338.x86_64.rpm
-WORKDIR $GOPATH/bin
+COPY horizon-cli*.rpm /data/horizon-cli*.rpm
+RUN rpm -i /data/horizon-cli*.rpm
+
 
 ENV KUBECTL_VERSION 1.19.2
 ENV OPENSHIFT_CLI_VERSION 4.5.11
@@ -17,12 +17,11 @@ RUN yum install -y \
   curl \
   unzip \
   sudo \
-  shadow \
   bash \
   openssl \
-  alpine-sdk \
   python3 \
   skopeo \
+  wget \
   ca-certificates \
   && rm -rf /var/cache/rpm/*
 
