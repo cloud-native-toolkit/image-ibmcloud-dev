@@ -1,4 +1,4 @@
-FROM centos:8
+FROM centos:8 AS builder
 
 
 
@@ -6,26 +6,31 @@ FROM centos:8
 # installing the Horizon CLI
 ############################
 
-COPY horizon-cli*.rpm /data/horizon-cli*.rpm
-RUN rpm -i /data/horizon-cli*.rpm
+
+RUN curl -L -O https://github.com/open-horizon/anax/releases/latest/download/horizon-agent-linux-rpm-x86_64.tar.gz && \
+    tar xvf horizon-agent-linux-rpm-x86_64.tar.gz && \
+    rpm -i horizon-cli*.rpm   
+    
+FROM docker.io/node:alpine3.12 
 
 
+ENV TERRAFORM_IBMCLOUD_VERSION 1.9.0
 ENV KUBECTL_VERSION 1.19.2
 ENV OPENSHIFT_CLI_VERSION 4.5.11
-ENV HOST_TYPE linux-rpm-x86_64 
 
-RUN yum install -y \
+
+RUN apk add --update-cache --update \
   curl \
   unzip \
   sudo \
+  shadow \
   bash \
   openssl \
+  alpine-sdk \
   python3 \
   skopeo \
-  wget \
-  which \
   ca-certificates \
-  && rm -rf /var/cache/rpm/*
+  && rm -rf /var/cache/apk/*
 
 WORKDIR $GOPATH/bin
 
@@ -58,8 +63,16 @@ RUN curl -fsSL https://clis.cloud.ibm.com/install/linux | sh && \
     ibmcloud plugin install container-registry -f && \
     ibmcloud plugin install observe-service -f && \
     ibmcloud plugin install vpc-infrastructure -f && \
-    ibmcloud config --check-version=false 
+    ibmcloud config --check-version=false
 
+# Install IBM Cloud Terraform Provider
+RUN mkdir -p ${HOME}/.terraform.d/plugins && \
+    cd ${HOME}/.terraform.d/plugins && \
+    curl -O -L https://github.com/IBM-Cloud/terraform-provider-ibm/releases/download/v${TERRAFORM_IBMCLOUD_VERSION}/linux_amd64.zip &&\
+    unzip linux_amd64.zip && \
+    chmod +x terraform-provider-ibm_* &&\
+    rm -rf linux_amd64.zip && \
+    cd -
 
 WORKDIR ${HOME}
 
@@ -95,5 +108,6 @@ RUN curl -LO https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 
 RUN wget -q -O ./yq $(wget -q -O - https://api.github.com/repos/mikefarah/yq/releases/latest | jq -r '.assets[] | select(.name == "yq_linux_amd64") | .browser_download_url') && \
     chmod +x ./yq && \
     sudo mv ./yq /usr/bin/yq
+COPY --from=builder /usr/bin/hzn /usr/bin/hzn   
 
 ENTRYPOINT ["/bin/sh"]
