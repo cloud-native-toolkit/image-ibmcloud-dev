@@ -1,8 +1,23 @@
-FROM docker.io/node:alpine3.12
+FROM centos:8 AS builder
+
+
+
+#############################
+# installing the Horizon CLI
+############################
+
+ENV HZN_CLI_VERSION 2.28.0-338
+RUN curl -L -O https://github.com/open-horizon/anax/releases/download/v${HZN_CLI_VERSION}/horizon-agent-linux-rpm-x86_64.tar.gz && \
+    tar xvf horizon-agent-linux-rpm-x86_64.tar.gz && \
+    rpm -i horizon-cli*.rpm   
+    
+FROM docker.io/node:alpine3.12 
+
 
 ENV TERRAFORM_IBMCLOUD_VERSION 1.9.0
 ENV KUBECTL_VERSION 1.19.2
 ENV OPENSHIFT_CLI_VERSION 4.5.11
+
 
 RUN apk add --update-cache --update \
   curl \
@@ -93,5 +108,6 @@ RUN curl -LO https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 
 RUN wget -q -O ./yq $(wget -q -O - https://api.github.com/repos/mikefarah/yq/releases/latest | jq -r '.assets[] | select(.name == "yq_linux_amd64") | .browser_download_url') && \
     chmod +x ./yq && \
     sudo mv ./yq /usr/bin/yq
+COPY --from=builder /usr/bin/hzn /usr/bin/hzn   
 
 ENTRYPOINT ["/bin/sh"]
