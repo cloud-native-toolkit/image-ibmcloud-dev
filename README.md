@@ -22,3 +22,5 @@ docker pull quay.io/ibmgaragecloud/ibmcloud-dev
 - kustomize
 - helm
 - python
+- tekton
+- cloudnativetoolkit cli
