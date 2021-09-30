@@ -105,6 +105,14 @@ RUN curl -LO https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 
     chmod a+x jq-linux64 && \
     sudo mv jq-linux64 /usr/local/bin/jq
 
+# install the IBM Garage Cloud Native Toolkit CLI
+RUN sudo npm i -g @ibmgaragecloud/cloud-native-toolkit-cli
+
+# Install the Tekton Pipelines CLI
+RUN curl -LO https://github.com/tektoncd/cli/releases/download/v0.20.0/tkn_0.20.0_Linux_x86_64.tar.gz && \
+    sudo tar xvzf tkn_0.20.0_Linux_x86_64.tar.gz -C /usr/local/bin/ tkn && \
+    rm tkn_0.20.0_Linux_x86_64.tar.gz
+
 RUN wget -q -O ./yq $(wget -q -O - https://api.github.com/repos/mikefarah/yq/releases/latest | jq -r '.assets[] | select(.name == "yq_linux_amd64") | .browser_download_url') && \
     chmod +x ./yq && \
     sudo mv ./yq /usr/bin/yq
