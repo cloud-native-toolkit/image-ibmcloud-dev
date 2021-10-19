@@ -49,7 +49,8 @@ ENV HOME /home/devops
 RUN useradd -u 10000 -g root -G sudo -d ${HOME} -m devops && \
     usermod --password $(echo password | openssl passwd -1 -stdin) devops && \
     chmod -R g+w ${HOME}
-
+RUN chmod -R a+rwx /usr/local/share/ca-certificates
+RUN chmod -R a+rwx /etc/ssl/certs
 USER devops
 WORKDIR ${HOME}
 
