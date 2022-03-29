@@ -116,6 +116,8 @@ RUN curl -LO https://github.com/tektoncd/cli/releases/download/v0.20.0/tkn_0.20.
 RUN wget -q -O ./yq $(wget -q -O - https://api.github.com/repos/mikefarah/yq/releases/latest | jq -r '.assets[] | select(.name == "yq_linux_amd64") | .browser_download_url') && \
     chmod +x ./yq && \
     sudo mv ./yq /usr/bin/yq
+
 COPY --from=builder /usr/bin/hzn /usr/bin/hzn   
+COPY --from=fullstorydev/grpcurl:latest /bin/grpcurl /usr/local/bin  
 
 ENTRYPOINT ["/bin/sh"]
