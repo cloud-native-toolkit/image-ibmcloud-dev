@@ -99,7 +99,7 @@ RUN curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/
     chmod +x ./kustomize && \
     sudo mv ./kustomize /usr/local/bin
 
-RUN curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+RUN curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash -s -- -v v3.4.2
 
 RUN curl -LO https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && \
     chmod a+x jq-linux64 && \
@@ -113,9 +113,12 @@ RUN curl -LO https://github.com/tektoncd/cli/releases/download/v0.20.0/tkn_0.20.
     sudo tar xvzf tkn_0.20.0_Linux_x86_64.tar.gz -C /usr/local/bin/ tkn && \
     rm tkn_0.20.0_Linux_x86_64.tar.gz
 
-RUN wget -q -O ./yq $(wget -q -O - https://api.github.com/repos/mikefarah/yq/releases/latest | jq -r '.assets[] | select(.name == "yq_linux_amd64") | .browser_download_url') && \
+RUN wget -q -O ./yq https://github.com/mikefarah/yq/releases/download/3.4.1/yq_linux_amd64 && \
     chmod +x ./yq && \
     sudo mv ./yq /usr/bin/yq
+
+RUN GRPC_HEALTH_PROBE_VERSION=v0.4.6 && wget -qO ./grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-amd64 && chmod +x ./grpc_health_probe && sudo mv ./grpc_health_probe /usr/bin/grpc_health_probe
+
 COPY --from=builder /usr/bin/hzn /usr/bin/hzn   
 
 ENTRYPOINT ["/bin/sh"]
